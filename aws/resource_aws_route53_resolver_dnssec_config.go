@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/route53resolver"
+	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/service/route53resolver/finder"
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/service/route53resolver/waiter"
@@ -115,9 +116,11 @@ func resourceAwsRoute53ResolverDnssecConfigDelete(d *schema.ResourceData, meta i
 		ResourceId: aws.String(d.Get("resource_id").(string)),
 		Validation: aws.String(route53resolver.ValidationDisable),
 	})
-	if isAWSErr(err, route53resolver.ErrCodeResourceNotFoundException, "") {
+
+	if tfawserr.ErrCodeEquals(err, route53resolver.ErrCodeResourceNotFoundException) {
 		return nil
 	}
+
 	if err != nil {
 		return fmt.Errorf("error deleting Route53 Resolver DNSSEC config (%s): %w", d.Id(), err)
 	}
